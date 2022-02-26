@@ -71,8 +71,19 @@
     </table>
 
     <p class="small">
-      Debug: sort - {{ currentSort }}, dir - {{ currentSortDir }}
+      Debug: sort - {{ currentSort }}, dir - {{ currentSortDir }}, page - {{page.current}}, length - {{page.length}}
     </p>
+
+    <nav aria-label="Page navigation example">
+      <ul class="pagination">
+        <li class="page-item">
+          <span class="page-link" @click="prevPage">Previous</span>
+        </li>
+        <li class="page-item">
+          <span class="page-link" @click="nextPage">Next</span>
+        </li>
+      </ul>
+    </nav>
   </div>
 </template>
 
@@ -87,6 +98,10 @@ export default {
       users: [],
       currentSort: "name",
       currentSortDir: "asc",
+      page: {
+        current: 1,
+        length: 3,
+      },
     };
   },
 
@@ -102,44 +117,67 @@ export default {
   },
 
   computed: {
+    // Разобрать этот код, пока ничего не понятно про сортировку
 
-      // Разобрать этот код, пока ничего не понятно про сортировку
+    userSort() {
+      return this.users.sort((a, b) => {
+        let mod = 1;
+        if (this.currentSortDir === "desc") {
+          mod = -1;
+        }
+        if (a[this.currentSort] < b[this.currentSort]) {
+          return -1 * mod;
+        }
 
-      userSort() {
-          return this.users.sort((a, b) => {
-              let mod = 1
-              if(this.currentSortDir === 'desc') {
-                  mod = -1
-              }
-              if(a[this.currentSort] < b[this.currentSort]) {
-                  return -1 * mod
-              }
+        if (a[this.currentSort] > b[this.currentSort]) {
+          return 1 * mod;
+        }
 
-              if(a[this.currentSort] > b[this.currentSort]) {
-                  return 1 * mod
-              }
-
-              return
-          })
-      }
+        return;
+        // Разобраться с постраничной навигацией
+      }).filter ((row, index) => {
+          let start = (this.page.current -1) * this.page.length
+          let end = this.page.current * this.page.length
+            if (index >= start && index < end) {
+                return true
+            }
+      })
+    },
   },
 
   methods: {
-
-      // Разобрать этот код, пока ничего не понятно про сортировку
-
-      sort(evt) {
-          if(evt === this.currentSort) {
-              this.currentSortDir = this.currentSortDir === 'asc' ? 'desc' : 'asc'
-          }
-          this.currentSort = evt
+    // Сортировка
+    // Разобрать этот код, пока ничего не понятно про сортировку
+    sort(evt) {
+      if (evt === this.currentSort) {
+        this.currentSortDir = this.currentSortDir === "asc" ? "desc" : "asc";
       }
+      this.currentSort = evt;
+    },
+
+    // Пагинация
+
+    prevPage() {
+      if (this.page.current > 1) {
+        this.page.current -= 1;
+      }
+    },
+
+    nextPage() {
+      if ((this.page.current * this.page.length) < this.users.length) {
+        this.page.current += 1;
+      }
+    },
   },
 };
 </script>
 
 <style scoped>
 th span {
-    cursor: pointer;
+  cursor: pointer;
+}
+
+.pagination span {
+  cursor: pointer;
 }
 </style>
